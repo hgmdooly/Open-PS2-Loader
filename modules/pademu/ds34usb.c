@@ -1,3 +1,4 @@
+
 #include "types.h"
 #include "loadcore.h"
 #include "stdio.h"
@@ -17,8 +18,11 @@
 #define REQ_USB_OUT (USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE)
 #define REQ_USB_IN  (USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE)
 
-#define JOYTRON_VID 0x0079
-#define JOYTRON_PID 0x181C
+//#define JOYTRON_VID 0x0079
+//#define JOYTRON_PID 0x181C
+
+#define JOYTRON_VID 0x20BC
+#define JOYTRON_PID 0x5501
 
 #define MAX_PADS 4
 
