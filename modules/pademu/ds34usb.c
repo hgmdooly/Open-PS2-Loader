@@ -254,18 +254,13 @@ static void usb_config_set(int result, int count, void *arg)
         led[1] = rgbled_patterns[pad][1][1];
         led[2] = rgbled_patterns[pad][1][2];
         led[3] = 0;
-    } else if(ds34pad[pad].type==JOYTRON) {
-        led[0]=0;
-        led[1]=0;
-        led[2]=0;
-        led[3]=0;
+    } else if(ds34pad[pad].type==JOYTRON) 
+    {
+        ds34pad[pad].status |= DS34USB_STATE_RUNNING;
+        SignalSema(ds34pad[pad].sema);
+        return;
     }
-
-    LEDRumble(led, 0, 0, pad);
-
-    ds34pad[pad].status |= DS34USB_STATE_RUNNING;
-
-    SignalSema(ds34pad[pad].sema);
+    LEDRumble(led,0,0,pad);
 }
 
 static void DS3USB_init(int pad)
@@ -336,6 +331,10 @@ static void readReport(u8 *data, int pad_idx)
             struct joytron_report *report;
             report=(struct joytron_report*)data;
             translate_pad_joytron(report,&pad->ds2);
+
+            pad->data[0]=pad->ds2.nButtonStateL;
+            pad->data[1]=pad->ds2.nButtonStateH;
+            
             padMacroPerform(&pad->ds2,0);
         } else if (pad->type == DS4) {
             struct ds4report *report;
@@ -476,8 +475,15 @@ int ds34usb_get_data(u8 *dst, int size, int port)
 
     PollSema(ds34pad[port].sema);
 
-    ret = UsbInterruptTransfer(ds34pad[port].interruptEndp, usb_buf, MAX_BUFFER_SIZE, usb_data_cb, (void *)port);
+    //ret = UsbInterruptTransfer(ds34pad[port].interruptEndp, usb_buf, MAX_BUFFER_SIZE, usb_data_cb, (void *)port);
+    int report_size = MAX_BUFFER_SIZE;
 
+    if(ds34pad[port].type==JOYTRON)
+    report_size = 9;
+
+    ret = UsbInterruptTransfer(ds34pad[port].interruptEndp, usb_buf, report_size, usb_data_cb, (void*)port);
+
+    
     if (ret == USB_RC_OK) {
         TransferWait(ds34pad[port].sema);
         if (!usb_resulCode)
