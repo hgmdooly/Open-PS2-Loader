@@ -285,17 +285,17 @@ struct ds4report
 
 struct joytron_report // 조이트론 구조체 추가
 {
-    u8 Buttons1;
-    u8 Buttons2;
-    u8 Hat;
+    uint8_t Buttons1;
+    uint8_t Buttons2;
+    uint8_t Hat;
 
-    u8 LX;
-    u8 LY;
-    u8 RX;
-    u8 RY;
+    uint8_t LX;
+    uint8_t LY;
+    uint8_t RX;
+    uint8_t RY;
 
-    u8 Reserved1;
-    u8 Reserved2;
+    uint8_t Reserved1;
+    uint8_t Reserved2;
 } __attribute__((packed));
 
 /**
