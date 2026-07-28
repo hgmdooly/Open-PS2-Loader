@@ -18,11 +18,11 @@
 #define REQ_USB_OUT (USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE)
 #define REQ_USB_IN  (USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE)
 
-//#define JOYTRON_VID 0x0079
-//#define JOYTRON_PID 0x181C
+#define JOYTRON_VID 0x0079
+#define JOYTRON_PID 0x181C
 
-#define JOYTRON_VID 0x20BC
-#define JOYTRON_PID 0x5501
+//#define JOYTRON_VID 0x20BC
+//#define JOYTRON_PID 0x5501
 
 #define MAX_PADS 4
 
@@ -258,9 +258,16 @@ static void usb_config_set(int result, int count, void *arg)
         led[1] = rgbled_patterns[pad][1][1];
         led[2] = rgbled_patterns[pad][1][2];
         led[3] = 0;
-    } else if(ds34pad[pad].type==JOYTRON) 
-    {
+    } else if(ds34pad[pad].type==JOYTRON){
         ds34pad[pad].status |= DS34USB_STATE_RUNNING;
+
+        UsbInterruptTransfer(
+            ds34pad[pad].interruptEndp,
+            usb_buf,
+            64,
+            usb_data_cb,
+            (void*)pad);
+
         SignalSema(ds34pad[pad].sema);
         return;
     }
@@ -333,11 +340,14 @@ static void readReport(u8 *data, int pad_idx)
 
         } else if(pad->type==JOYTRON) {
             struct joytron_report *report;
-            report=(struct joytron_report*)data;
+            //report=(struct joytron_report*)data;
+            report=(struct joytron_report *)&data[0];
             translate_pad_joytron(report,&pad->ds2);
 
-            pad->data[0]=pad->ds2.nButtonStateL;
-            pad->data[1]=pad->ds2.nButtonStateH;
+            //pad->data[0]=pad->ds2.nButtonStateL;
+            //pad->data[1]=pad->ds2.nButtonStateH;
+            pad->data[0]=~pad->ds2.nButtonStateL;
+            pad->data[1]=~pad->ds2.nButtonStateH;
             
             padMacroPerform(&pad->ds2,0);
         } else if (pad->type == DS4) {
@@ -483,7 +493,8 @@ int ds34usb_get_data(u8 *dst, int size, int port)
     int report_size = MAX_BUFFER_SIZE;
 
     if(ds34pad[port].type==JOYTRON)
-    report_size = 9;
+    //report_size = 9;
+    report_size = 64;
 
     ret = UsbInterruptTransfer(ds34pad[port].interruptEndp, usb_buf, report_size, usb_data_cb, (void*)port);
 
