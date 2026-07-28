@@ -297,8 +297,9 @@ static void readReport(u8 *data, int pad_idx)
         translate_pad_guitar(report, &pad->ds2, pad->type == GUITAR_GH);
         padMacroPerform(&pad->ds2, report->PSButton);
     }
-    if (data[0]) {
-
+    //if (data[0]) {
+    if(pad->type==JOYTRON || data[0]){
+        
         if (pad->type == DS3) {
             struct ds3report *report;
 
